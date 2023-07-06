@@ -69,8 +69,9 @@ Result(*** HIT ***): 1879
 Result: 1912
 ```
 
+## Contributing
+Contributions are welcome! Feel free to open an issue or submit a pull request for any improvements or new features you would like to see.
+
 ## License
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
 
-## Contributing
-Contributions are welcome! Feel free to open an issue or submit a pull request for any improvements or new features you would like to see.
