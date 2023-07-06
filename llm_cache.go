@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-// Engine is an interface for performing lookup and update operations.
+// Engine is an interface for performing lookup, update, and clearing operations.
 type Engine[T comparable] interface {
 	// Lookup retrieves the cached result associated with the given prompt.
 	// It returns the result and a boolean indicating whether the result was found.
@@ -13,6 +13,10 @@ type Engine[T comparable] interface {
 	// Update updates the cache with the provided prompt and result.
 	// It returns an error if the update operation fails.
 	Update(ctx context.Context, prompt string, result T) error
+
+	// Clear clears the cache, removing all entries.
+	// It returns an error if the clear operation fails.
+	Clear(ctx context.Context) error
 }
 
 // CacheEntry represents an entry in the cache.

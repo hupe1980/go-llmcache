@@ -68,3 +68,9 @@ func (e *mockEngine[T]) Update(ctx context.Context, prompt string, result T) err
 	e.cache[prompt] = result
 	return nil
 }
+
+// Clear is a mock implementation of the Engine's Clear method.
+func (e *mockEngine[T]) Clear(ctx context.Context) error {
+	e.cache = make(map[string]T)
+	return nil
+}

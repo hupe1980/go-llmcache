@@ -122,3 +122,10 @@ func (e *LRUSimilarityEngine[T]) Update(ctx context.Context, prompt string, resu
 
 	return nil
 }
+
+// Clear clears the cache, removing all entries.
+// It returns an error if the clear operation fails.
+func (e *LRUSimilarityEngine[T]) Clear(ctx context.Context) error {
+	e.cache.Purge()
+	return nil
+}

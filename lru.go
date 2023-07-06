@@ -54,3 +54,10 @@ func (e *LRUEngine[T]) Update(ctx context.Context, prompt string, result T) erro
 	e.cache.Add(prompt, result)
 	return nil
 }
+
+// Clear clears the cache, removing all entries.
+// It returns an error if the clear operation fails.
+func (e *LRUEngine[T]) Clear(ctx context.Context) error {
+	e.cache.Purge()
+	return nil
+}
