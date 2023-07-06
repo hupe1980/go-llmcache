@@ -6,6 +6,9 @@ import (
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 
+// Compile time check to ensure LRUSimilarityEngine satisfies the Engine interface.
+var _ Engine[any] = (*LRUSimilarityEngine[any])(nil)
+
 // LRUSimilarityEngineOptions contains options for configuring the LRUSimilarityEngine.
 type LRUSimilarityEngineOptions struct {
 	// Inherits options from LRUEngine.
@@ -54,6 +57,10 @@ func NewLRUSimilarityEngine[T comparable](embedder Embedder, optFns ...func(o *L
 // Lookup retrieves the most similar cached result associated with the given prompt.
 // It returns the result and a boolean indicating whether a match was found.
 func (e *LRUSimilarityEngine[T]) Lookup(ctx context.Context, prompt string) (T, bool) {
+	if entry, ok := e.cache.Get(prompt); ok {
+		return entry.Result, true
+	}
+
 	embedding, err := e.embedder.EmbedQuery(ctx, prompt)
 	if err != nil {
 		return *new(T), false

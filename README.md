@@ -51,6 +51,7 @@ func main() {
             fmt.Println("Result(*** HIT ***):", strings.ReplaceAll(result.Generations[0].Text, "\n", ""))
             continue
         }
+        
         // If no similar result found in cache, perform the actual LLM lookup
         result, _ := openai.Generate(ctx, prompt)
 

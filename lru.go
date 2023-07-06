@@ -6,6 +6,9 @@ import (
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 
+// Compile time check to ensure LRUEngine satisfies the Engine interface.
+var _ Engine[any] = (*LRUEngine[any])(nil)
+
 // LRUEngineOptions contains options for configuring the LRUEngine.
 type LRUEngineOptions struct {
 	// MaxCacheSize is the maximum number of entries to be stored in the cache.

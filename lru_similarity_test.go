@@ -9,8 +9,7 @@ import (
 
 func TestLRUSimilarityEngine_LookupAndUpdate(t *testing.T) {
 	// Create a test embedder implementation for the LRUSimilarityEngine.
-	// This can be a mock or a real implementation for testing purposes.
-	testEmbedder := &TestEmbedder{
+	mockEmbedder := &mockEmbedder{
 		embeddings: map[string][]float64{
 			"prompt1": {0.1, 0.2, 0.3, 0.4},
 			"prompt2": {0.2, 0.2, 0.3, 0.4},
@@ -20,7 +19,7 @@ func TestLRUSimilarityEngine_LookupAndUpdate(t *testing.T) {
 
 	t.Run("Lookup", func(t *testing.T) {
 		// Create a new LRUSimilarityEngine instance with the test embedder.
-		cache, err := NewLRUSimilarityEngine[string](testEmbedder)
+		cache, err := NewLRUSimilarityEngine[string](mockEmbedder)
 		assert.NoError(t, err)
 
 		t.Run("Hit", func(t *testing.T) {
@@ -59,13 +58,13 @@ func TestLRUSimilarityEngine_LookupAndUpdate(t *testing.T) {
 	})
 }
 
-// TestEmbedder is a mock implementation of the Embedder interface for testing.
-type TestEmbedder struct {
+// mockEmbedder is a mock implementation of the Embedder interface for testing.
+type mockEmbedder struct {
 	embeddings map[string][]float64
 }
 
 // EmbedQuery is a mock implementation of the Embedder's EmbedQuery method.
-func (e *TestEmbedder) EmbedQuery(ctx context.Context, prompt string) ([]float64, error) {
+func (e *mockEmbedder) EmbedQuery(ctx context.Context, prompt string) ([]float64, error) {
 	// Mock implementation logic goes here.
 	// Return the embedding vector for the given prompt.
 	return e.embeddings[prompt], nil
