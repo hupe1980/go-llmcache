@@ -123,24 +123,28 @@ func (e *LRUSimilarityEngine[T]) Lookup(ctx context.Context, text string) (T, bo
 // Update updates the cache with the provided prompt and result.
 // It retrieves the embedding if available, or embeds the prompt if it is a new entry.
 func (e *LRUSimilarityEngine[T]) Update(ctx context.Context, prompt string, result T) error {
-	var embedding []float32
-
 	if entry, ok := e.cache.Get(prompt); ok {
-		embedding = entry.Embedding
+		if entry.Result == result {
+			return nil // nothing to do
+		}
+
+		e.cache.Remove(prompt)
+
+		e.cache.Add(prompt, &CacheEntry[T]{
+			Embedding: entry.Embedding,
+			Result:    result,
+		})
 	} else {
-		e, err := e.embedder.EmbedText(ctx, prompt)
+		embedding, err := e.embedder.EmbedText(ctx, prompt)
 		if err != nil {
 			return err
 		}
 
-		embedding = e
+		e.cache.Add(prompt, &CacheEntry[T]{
+			Embedding: embedding,
+			Result:    result,
+		})
 	}
-
-	// Store the result in the cache
-	e.cache.Add(prompt, &CacheEntry[T]{
-		Embedding: embedding,
-		Result:    result,
-	})
 
 	return nil
 }
