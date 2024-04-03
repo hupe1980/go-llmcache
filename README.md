@@ -17,49 +17,64 @@ go get github.com/hupe1980/go-llmcache
 
 ## Usage
 ```go
+package main
+
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
+	"github.com/hupe1980/go-llmcache"
 	"github.com/hupe1980/golc/embedding"
 	"github.com/hupe1980/golc/model/llm"
 	"github.com/hupe1980/golc/schema"
 )
 
 func main() {
-    apiKey := os.Getenv("OPENAI_API_KEY")
+	apiKey := os.Getenv("OPENAI_API_KEY")
 
-    embedder, _ := embedding.NewOpenAI(apiKey)
-    openai, _ := llm.NewOpenAI(apiKey)
-    engine, _ := NewLRUSimilarityEngine[*schema.ModelResult](embedder)
+	embedder := embedding.NewOpenAI(apiKey)
 
-    cache := New[*schema.ModelResult](engine)
+	openai, err := llm.NewOpenAI(apiKey)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    ctx := context.Background()
+	engine, err := llmcache.NewLRUSimilarityEngine[*schema.ModelResult](embedder)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    prompts := []string{
-        "What year was Einstein born? Return only the year!",
-        "What year was Albert Einstein born? Return only the year!",
-        "In what year was albert einstein born? Return only the year!",
-        "What year was Alan Turing born? Return only the year!",
-    }
+	cache := llmcache.New(engine)
 
-    for _, prompt := range prompts {
-        if result, ok := cache.Lookup(ctx, prompt); ok {
-            fmt.Println("Result(*** HIT ***):", strings.ReplaceAll(result.Generations[0].Text, "\n", ""))
-            continue
-        }
-        
-        // If no similar result found in cache, perform the actual LLM lookup
-        result, _ := openai.Generate(ctx, prompt)
+	ctx := context.Background()
 
-        _ = cache.Update(ctx, prompt, result)
+	prompts := []string{
+		"What year was Einstein born? Return only the year!",
+		"What year was Albert Einstein born? Return only the year!",
+		"In what year was albert einstein born? Return only the year!",
+		"What year was Alan Turing born? Return only the year!",
+	}
 
-        fmt.Println("Result:", strings.ReplaceAll(result.Generations[0].Text, "\n", ""))
-    }
+	for _, prompt := range prompts {
+		if result, ok := cache.Lookup(ctx, prompt); ok {
+			fmt.Println("Result(*** HIT ***):", strings.ReplaceAll(result.Generations[0].Text, "\n", ""))
+			continue
+		}
+		// If no similar result found in cache, perform the actual LLM lookup
+		result, err := openai.Generate(ctx, prompt)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		_ = cache.Update(ctx, prompt, result)
+
+		fmt.Println("Result:", strings.ReplaceAll(result.Generations[0].Text, "\n", ""))
+	}
 }
+
 ```
 Output:
 ```text
