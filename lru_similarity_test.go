@@ -10,7 +10,7 @@ import (
 func TestLRUSimilarityEngine_LookupAndUpdate(t *testing.T) {
 	// Create a test embedder implementation for the LRUSimilarityEngine.
 	mockEmbedder := &mockEmbedder{
-		embeddings: map[string][]float64{
+		embeddings: map[string][]float32{
 			"prompt1": {0.1, 0.2, 0.3, 0.4},
 			"prompt2": {0.2, 0.2, 0.3, 0.4},
 			"prompt3": {-0.1, -0.2, -0.3, -0.4},
@@ -60,12 +60,12 @@ func TestLRUSimilarityEngine_LookupAndUpdate(t *testing.T) {
 
 // mockEmbedder is a mock implementation of the Embedder interface for testing.
 type mockEmbedder struct {
-	embeddings map[string][]float64
+	embeddings map[string][]float32
 }
 
 // EmbedQuery is a mock implementation of the Embedder's EmbedQuery method.
-func (e *mockEmbedder) EmbedQuery(ctx context.Context, prompt string) ([]float64, error) {
+func (e *mockEmbedder) EmbedText(ctx context.Context, text string) ([]float32, error) {
 	// Mock implementation logic goes here.
 	// Return the embedding vector for the given prompt.
-	return e.embeddings[prompt], nil
+	return e.embeddings[text], nil
 }

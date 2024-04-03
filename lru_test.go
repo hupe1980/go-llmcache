@@ -18,6 +18,7 @@ func TestLRUEngine(t *testing.T) {
 
 			err = engine.Update(ctx, prompt, result)
 			assert.NoError(t, err)
+
 			foundResult, ok := engine.Lookup(ctx, prompt)
 			assert.True(t, ok)
 			assert.Equal(t, result, foundResult)

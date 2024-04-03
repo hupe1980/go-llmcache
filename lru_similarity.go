@@ -2,6 +2,7 @@ package llmcache
 
 import (
 	"context"
+	"math"
 
 	lru "github.com/hashicorp/golang-lru/v2"
 )
@@ -9,23 +10,31 @@ import (
 // Compile time check to ensure LRUSimilarityEngine satisfies the Engine interface.
 var _ Engine[any] = (*LRUSimilarityEngine[any])(nil)
 
+// DistanceFunc represents a function for calculating the distance between two vectors
+type DistanceFunc func(v1, v2 []float32) (float32, error)
+
 // LRUSimilarityEngineOptions contains options for configuring the LRUSimilarityEngine.
 type LRUSimilarityEngineOptions struct {
 	// Inherits options from LRUEngine.
 	LRUEngineOptions
-	// Threshold is the minimum cosine similarity required for a result to be considered a match.
-	Threshold float64
+	// DistanceFunc represents the distance function used for calculating the similarity between embeddings.
+	DistanceFunc DistanceFunc
+	// Threshold is the maximum distance allowed for a result to be considered a match.
+	Threshold float32
+	// ReturnFirst is a boolean flag indicating whether to return the first match found during lookup.
+	// If set to true, the engine will return the first match found within the threshold distance.
+	ReturnFirst bool
 }
 
 // LRUSimilarityEngine is a cache engine implementation based on LRU (Least Recently Used) strategy
 // with cosine similarity matching capability.
 type LRUSimilarityEngine[T comparable] struct {
-	// threshold is the minimum cosine similarity required for a result to be considered a match.
-	threshold float64
 	// embedder is the embedding functionality used for similarity calculations.
 	embedder Embedder
 	// cache is the underlying LRU cache for storing prompt embeddings and results.
 	cache *lru.Cache[string, *CacheEntry[T]]
+	// opts contains options for configuring the LRUSimilarityEngine
+	opts LRUSimilarityEngineOptions
 }
 
 // NewLRUSimilarityEngine creates a new LRUSimilarityEngine instance with the provided embedder and options.
@@ -33,9 +42,11 @@ type LRUSimilarityEngine[T comparable] struct {
 func NewLRUSimilarityEngine[T comparable](embedder Embedder, optFns ...func(o *LRUSimilarityEngineOptions)) (*LRUSimilarityEngine[T], error) {
 	opts := LRUSimilarityEngineOptions{
 		LRUEngineOptions: LRUEngineOptions{
-			MaxCacheSize: 1000, // Default maximum cache size is set to 1000 entries.
+			MaxCacheSize: 1000,
 		},
-		Threshold: 0.95, // Default threshold is set to 0.95.
+		DistanceFunc: SquaredL2,
+		Threshold:    float32(0.50),
+		ReturnFirst:  false,
 	}
 
 	for _, fn := range optFns {
@@ -48,28 +59,30 @@ func NewLRUSimilarityEngine[T comparable](embedder Embedder, optFns ...func(o *L
 	}
 
 	return &LRUSimilarityEngine[T]{
-		threshold: opts.Threshold,
-		embedder:  embedder,
-		cache:     cache,
+		embedder: embedder,
+		cache:    cache,
+		opts:     opts,
 	}, nil
 }
 
-// Lookup retrieves the most similar cached result associated with the given prompt.
+// Lookup retrieves the most similar cached result associated with the given text.
 // It returns the result and a boolean indicating whether a match was found.
-func (e *LRUSimilarityEngine[T]) Lookup(ctx context.Context, prompt string) (T, bool) {
-	if entry, ok := e.cache.Get(prompt); ok {
+func (e *LRUSimilarityEngine[T]) Lookup(ctx context.Context, text string) (T, bool) {
+	if entry, ok := e.cache.Get(text); ok {
 		return entry.Result, true
 	}
 
-	embedding, err := e.embedder.EmbedQuery(ctx, prompt)
+	embedding, err := e.embedder.EmbedText(ctx, text)
 	if err != nil {
 		return *new(T), false
 	}
 
 	var (
-		maxResult     T
-		maxSimilarity float64
+		result T
 	)
+
+	found := false
+	minDistance := float32(math.MaxFloat32)
 
 	for _, entry := range e.cache.Values() {
 		if entry.Result == *new(T) {
@@ -77,22 +90,31 @@ func (e *LRUSimilarityEngine[T]) Lookup(ctx context.Context, prompt string) (T, 
 		}
 
 		otherEmbedding := entry.Embedding
-		similarity := Similarity(embedding, otherEmbedding)
 
-		if similarity > maxSimilarity {
-			maxSimilarity = similarity
-			maxResult = entry.Result
+		distance, err := e.opts.DistanceFunc(embedding, otherEmbedding)
+		if err != nil {
+			return *new(T), false
+		}
+
+		if distance < e.opts.Threshold && distance < minDistance {
+			minDistance = distance
+			result = entry.Result
+			found = true
+
+			if e.opts.ReturnFirst {
+				return result, true
+			}
 		}
 	}
 
-	if maxSimilarity > e.threshold {
-		return maxResult, true
+	if found {
+		return result, true
 	}
 
 	// Store the embedding in the cache
-	e.cache.Add(prompt, &CacheEntry[T]{
+	e.cache.Add(text, &CacheEntry[T]{
 		Embedding: embedding,
-		//Result:    nil,
+		Result:    *new(T),
 	})
 
 	return *new(T), false
@@ -101,12 +123,12 @@ func (e *LRUSimilarityEngine[T]) Lookup(ctx context.Context, prompt string) (T, 
 // Update updates the cache with the provided prompt and result.
 // It retrieves the embedding if available, or embeds the prompt if it is a new entry.
 func (e *LRUSimilarityEngine[T]) Update(ctx context.Context, prompt string, result T) error {
-	var embedding []float64
+	var embedding []float32
 
 	if entry, ok := e.cache.Get(prompt); ok {
 		embedding = entry.Embedding
 	} else {
-		e, err := e.embedder.EmbedQuery(ctx, prompt)
+		e, err := e.embedder.EmbedText(ctx, prompt)
 		if err != nil {
 			return err
 		}

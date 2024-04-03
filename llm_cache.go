@@ -21,17 +21,17 @@ type Engine[T comparable] interface {
 
 // CacheEntry represents an entry in the cache.
 type CacheEntry[T comparable] struct {
-	// Embedding is the vector representation of the prompt.
-	Embedding []float64
-	// Result is the cached result associated with the prompt.
+	// Embedding is the vector representation of the text.
+	Embedding []float32
+	// Result is the cached result associated with the text.
 	Result T
 }
 
 // Embedder is an interface for embedding queries.
 type Embedder interface {
-	// EmbedQuery embeds the given text and returns the embedding vector.
+	// EmbedText embeds the given text and returns the embedding vector.
 	// It returns an error if the embedding operation fails.
-	EmbedQuery(ctx context.Context, text string) ([]float64, error)
+	EmbedText(ctx context.Context, text string) ([]float32, error)
 }
 
 // LLMCache is a cache implementation that utilizes an Engine.
