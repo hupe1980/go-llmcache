@@ -3,7 +3,7 @@ module github.com/hupe1980/go-llmcache/example
 go 1.22.1
 
 require (
-	github.com/hupe1980/go-llmcache v0.0.4
+	github.com/hupe1980/go-llmcache v0.0.6
 	github.com/hupe1980/golc v0.0.110
 )
 
