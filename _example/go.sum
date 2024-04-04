@@ -49,8 +49,8 @@ github.com/hashicorp/golang-lru/v2 v2.0.7 h1:a+bsQ5rvGLjzHuww6tVxozPZFVghXaHOwFs
 github.com/hashicorp/golang-lru/v2 v2.0.7/go.mod h1:QeFd9opnmA6QUJc5vARoKUSoFhyfM2/ZepoAG6RGpeM=
 github.com/hupe1980/go-huggingface v0.0.15 h1:tTWmUGGunC/BYz4hrwS8SSVtMYVYjceG2uhL8HxeXvw=
 github.com/hupe1980/go-huggingface v0.0.15/go.mod h1:IRvsik3+b9BJyw9hCfw1arI6gDObcVto1UA8f3kt8mM=
-github.com/hupe1980/go-llmcache v0.0.6 h1:YuENFVKQY/3kqtyPqD8SXONpnNgQpnpklmG/aY7e+d0=
-github.com/hupe1980/go-llmcache v0.0.6/go.mod h1:0lRlo03wRJWEhDSb/gxgNh0KpJgt1spFHM5H6nOqtoc=
+github.com/hupe1980/go-llmcache v0.0.7 h1:Ueq1jsjeA783legNjc6nvgBZCq0HZXzEhggwuf2zEIk=
+github.com/hupe1980/go-llmcache v0.0.7/go.mod h1:0lRlo03wRJWEhDSb/gxgNh0KpJgt1spFHM5H6nOqtoc=
 github.com/hupe1980/go-promptlayer v0.0.6 h1:cga58zaQYPz7wo7EZG1a0goBj7OzoE5s3HT2Dl1Wp6g=
 github.com/hupe1980/go-promptlayer v0.0.6/go.mod h1:tiCI1t6OkHe9Qio95G5+DMPOONboRJ67sSn1F0afqcU=
 github.com/hupe1980/go-tiktoken v0.0.6 h1:CnxCtX2xTVYY90JlWFnH+yLewgqXv7/QSl2Vk5UEMIM=
