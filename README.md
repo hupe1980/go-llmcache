@@ -42,7 +42,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	engine, err := llmcache.NewLRUSimilarityEngine[*schema.ModelResult](embedder)
+	engine, err := llmcache.NewLRUSimilarityEngine[*schema.ModelResult](embedder, func(o *llmcache.LRUSimilarityEngineOptions) {
+		// o.DistanceFunc = llmcache.SquaredL2
+		// o.Threshold = 0.5
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,7 +77,6 @@ func main() {
 		fmt.Println("Result:", strings.ReplaceAll(result.Generations[0].Text, "\n", ""))
 	}
 }
-
 ```
 Output:
 ```text

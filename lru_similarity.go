@@ -44,8 +44,8 @@ func NewLRUSimilarityEngine[T comparable](embedder Embedder, optFns ...func(o *L
 		LRUEngineOptions: LRUEngineOptions{
 			MaxCacheSize: 1000,
 		},
-		DistanceFunc: SquaredL2,
-		Threshold:    float32(0.50),
+		DistanceFunc: CosineDistance,
+		Threshold:    float32(0.2),
 		ReturnFirst:  false,
 	}
 
